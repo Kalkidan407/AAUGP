@@ -2,7 +2,8 @@ package com.example.aaugp.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ProjectRepository  extends JpaRepository<ProjectRepository, Long>{
+import com.example.aaugp.model.ProjectEntity;
 
-    
-}
+
+
+public interface ProjectRepository  extends JpaRepository<ProjectEntity , Long>{}
