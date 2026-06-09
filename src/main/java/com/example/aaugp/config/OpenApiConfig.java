@@ -17,18 +17,11 @@ import io.swagger.v3.oas.annotations.info.Info;
         version = "1.0",
         description = "Addis Ababa University Graduation Project Platform API" )
     
-        // security = @SecurityRequirement(name = "bearerAuth")
+
 )
 
-// @SecurityScheme(
-//         name = "bearerAuth",
-//         description = "JWT Authentication",
-//         scheme = "bearer",
-//         type = SecuritySchemeType.HTTP,
-//         bearerFormat = "JWT",
-//         in = SecuritySchemeIn.HEADER
-        
-// )
+
+
 public class OpenApiConfig {
     
 }
