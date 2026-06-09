@@ -24,6 +24,9 @@ public class ProjectEntity {
     @Column(nullable = false, unique = true)
     private String title;
 
+    @Column(nullable =  = false)
+    private Number year;
+
     @Column(nullable = false, unique = true)
     private String description;
 
@@ -43,7 +46,12 @@ private UserEntity user;
 
 @OneToMany(fetch = FetchType.LAZY)
 @JoinColumn(name = "project_id")
-private CommentEntity project;
+private CommentEntity comment;
+
+
+@OneToMany(fetch = FetchType.LAZY)
+@JoinColumn(name = "project_id")
+private DepartmentEntity department;
 
 
 }
