@@ -12,18 +12,13 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-
 @Data
 @Entity 
 @NoArgsConstructor
 public class UserEntity {
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,11 +33,9 @@ public class UserEntity {
     @Column(nullable = false)
     private String password;    
 
-
-
-@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-@JsonIgnore
-private List<ProjectEntity> projects;
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<ProjectEntity> projects;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
