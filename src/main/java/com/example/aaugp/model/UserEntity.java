@@ -1,5 +1,7 @@
 package com.example.aaugp.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -35,6 +37,7 @@ public class UserEntity {
 
     @OneToOne(fetch = FetchType.LAZY)
 @JoinColumn(name = "project_id")
+@JsonIgnore
 private ProjectEntity project;
 
     @Enumerated(EnumType.STRING)
