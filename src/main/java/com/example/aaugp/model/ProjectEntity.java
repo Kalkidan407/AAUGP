@@ -51,7 +51,7 @@ public class ProjectEntity {
     @Column(nullable = false, unique = true)
     private Integer starCount = 0;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY)
 @JoinColumn(name = "user_id")
 private UserEntity user;  
     
