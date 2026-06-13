@@ -3,6 +3,7 @@ package com.example.aaugp.services;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -22,8 +23,9 @@ public class UserServices {
 
     private final UserRepository userRepository;
     private final DepartmentRepository departmentRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    private UserResponse toDTO(UserEntity user) {
+    public UserResponse toDTO(UserEntity user) {
         UserResponse dto = new UserResponse();
         dto.setId(user.getId());
         dto.setFirstName(user.getFirstName());
@@ -43,7 +45,7 @@ public class UserServices {
         user.setLastName(request.getLastName());
         user.setStudentId(request.getStudentId());
         user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(Role.USER);
         user.setDepartment(resolveDepartment(request.getDepartments()));
         return user;
@@ -91,7 +93,9 @@ public class UserServices {
         user.setLastName(dto.getLastName());
         user.setStudentId(dto.getStudentId());
         user.setEmail(dto.getEmail());
-        user.setPassword(dto.getPassword());
+        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        }
         user.setDepartment(resolveDepartment(dto.getDepartments()));
         UserEntity updated = userRepository.save(user);
         return toDTO(updated);
