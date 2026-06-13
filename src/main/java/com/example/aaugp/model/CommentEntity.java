@@ -8,30 +8,32 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Data
 @NoArgsConstructor
 public class CommentEntity {
     
-     @Id
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
 
     @Column(nullable = false)
     private String content;
 
-@ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "user_id")
-private UserEntity user;   
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private UserEntity user;
 
-
-@OneToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "project_id")
-private ProjectEntity project;
-
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private ProjectEntity project;
 }
