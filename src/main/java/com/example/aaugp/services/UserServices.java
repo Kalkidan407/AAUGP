@@ -2,11 +2,13 @@ package com.example.aaugp.services;
 
 import java.util.List;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.example.aaugp.dto.user.UserFilter;
 import com.example.aaugp.dto.user.UserRequest;
 import com.example.aaugp.dto.user.UserResponse;
 import com.example.aaugp.model.DepartmentEntity;
@@ -24,7 +26,6 @@ public class UserServices {
     private final UserRepository userRepository;
     private final DepartmentRepository departmentRepository;
     private final PasswordEncoder passwordEncoder;
-    private final AauStudentIdValidator aauStudentIdValidator;
 
     public UserResponse toDTO(UserEntity user) {
         UserResponse dto = new UserResponse();
@@ -44,9 +45,11 @@ public class UserServices {
         UserEntity user = new UserEntity();
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
-        user.setStudentId(normalizeAndValidateStudentId(request.getStudentId()));
+        user.setStudentId(request.getStudentId());
         user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setPassword(
+            passwordEncoder.encode(request.getPassword())
+          );
         user.setRole(Role.USER);
         user.setDepartment(resolveDepartment(request.getDepartments()));
         return user;
@@ -92,7 +95,7 @@ public class UserServices {
         UserEntity user = getUserEntityById(id);
         user.setFirstName(dto.getFirstName());
         user.setLastName(dto.getLastName());
-        user.setStudentId(normalizeAndValidateStudentId(dto.getStudentId()));
+        user.setStudentId(dto.getStudentId());
         user.setEmail(dto.getEmail());
         if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(dto.getPassword()));
@@ -113,9 +116,5 @@ public class UserServices {
                         HttpStatus.NOT_FOUND, "User not found with id: " + id));
     }
 
-    private String normalizeAndValidateStudentId(String studentId) {
-        String normalized = studentId == null ? null : studentId.trim().toUpperCase();
-        aauStudentIdValidator.parse(normalized);
-        return normalized;
-    }
+    
 }
