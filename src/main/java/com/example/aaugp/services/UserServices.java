@@ -3,6 +3,7 @@ package com.example.aaugp.services;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -22,8 +23,10 @@ public class UserServices {
 
     private final UserRepository userRepository;
     private final DepartmentRepository departmentRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final AauStudentIdValidator aauStudentIdValidator;
 
-    private UserResponse toDTO(UserEntity user) {
+    public UserResponse toDTO(UserEntity user) {
         UserResponse dto = new UserResponse();
         dto.setId(user.getId());
         dto.setFirstName(user.getFirstName());
@@ -41,9 +44,9 @@ public class UserServices {
         UserEntity user = new UserEntity();
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
-        user.setStudentId(request.getStudentId());
+        user.setStudentId(normalizeAndValidateStudentId(request.getStudentId()));
         user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(Role.USER);
         user.setDepartment(resolveDepartment(request.getDepartments()));
         return user;
@@ -89,9 +92,11 @@ public class UserServices {
         UserEntity user = getUserEntityById(id);
         user.setFirstName(dto.getFirstName());
         user.setLastName(dto.getLastName());
-        user.setStudentId(dto.getStudentId());
+        user.setStudentId(normalizeAndValidateStudentId(dto.getStudentId()));
         user.setEmail(dto.getEmail());
-        user.setPassword(dto.getPassword());
+        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        }
         user.setDepartment(resolveDepartment(dto.getDepartments()));
         UserEntity updated = userRepository.save(user);
         return toDTO(updated);
@@ -106,5 +111,11 @@ public class UserServices {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "User not found with id: " + id));
+    }
+
+    private String normalizeAndValidateStudentId(String studentId) {
+        String normalized = studentId == null ? null : studentId.trim().toUpperCase();
+        aauStudentIdValidator.parse(normalized);
+        return normalized;
     }
 }

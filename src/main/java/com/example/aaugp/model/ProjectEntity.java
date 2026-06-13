@@ -37,6 +37,15 @@ public class ProjectEntity {
     @Column(nullable = false)
     private Integer graduationYear;
 
+    @Column(nullable = false, unique = true)
+    private String studentId;
+
+    @Column(nullable = false)
+    private Integer studentStartYearEc;
+
+    @Column(nullable = false)
+    private Integer expectedGraduationYearEc;
+
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
