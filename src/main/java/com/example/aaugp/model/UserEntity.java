@@ -25,7 +25,14 @@ public class UserEntity {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String username;
+    private String firstName;
+
+
+    @Column(nullable = false, unique = true)
+    private String lastName;
+
+    @Column(nullable = false, unique = true)
+    private String studentId;
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -36,6 +43,10 @@ public class UserEntity {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<ProjectEntity> projects;
+
+     @OneToMany(mappedBy = "departmentEntity", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<DepartmentEntity> departments;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
