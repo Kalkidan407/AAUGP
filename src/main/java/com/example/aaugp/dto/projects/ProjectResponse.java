@@ -17,6 +17,8 @@ public class ProjectResponse {
     private String description;
     private String department;
     private String studentId;
+    private Integer studentStartYearEc;
+    private Integer expectedGraduationYearEc;
     private String githubLink;
     private String demoLink;
     private String imageUrl;

@@ -24,6 +24,7 @@ public class UserServices {
     private final UserRepository userRepository;
     private final DepartmentRepository departmentRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AauStudentIdValidator aauStudentIdValidator;
 
     public UserResponse toDTO(UserEntity user) {
         UserResponse dto = new UserResponse();
@@ -43,7 +44,7 @@ public class UserServices {
         UserEntity user = new UserEntity();
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
-        user.setStudentId(request.getStudentId());
+        user.setStudentId(normalizeAndValidateStudentId(request.getStudentId()));
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(Role.USER);
@@ -91,7 +92,7 @@ public class UserServices {
         UserEntity user = getUserEntityById(id);
         user.setFirstName(dto.getFirstName());
         user.setLastName(dto.getLastName());
-        user.setStudentId(dto.getStudentId());
+        user.setStudentId(normalizeAndValidateStudentId(dto.getStudentId()));
         user.setEmail(dto.getEmail());
         if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(dto.getPassword()));
@@ -110,5 +111,11 @@ public class UserServices {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "User not found with id: " + id));
+    }
+
+    private String normalizeAndValidateStudentId(String studentId) {
+        String normalized = studentId == null ? null : studentId.trim().toUpperCase();
+        aauStudentIdValidator.parse(normalized);
+        return normalized;
     }
 }
