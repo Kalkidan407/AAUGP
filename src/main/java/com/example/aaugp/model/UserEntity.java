@@ -1,5 +1,6 @@
 package com.example.aaugp.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -12,11 +13,16 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
+
 @Data
-@Entity 
+@Entity
 @NoArgsConstructor
 public class UserEntity {
 
@@ -24,11 +30,10 @@ public class UserEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String firstName;
 
-
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String lastName;
 
     @Column(nullable = false, unique = true)
@@ -38,19 +43,28 @@ public class UserEntity {
     private String email;
     
     @Column(nullable = false)
-    private String password;    
+    private String password;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     @JsonIgnore
-    private List<ProjectEntity> projects;
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<ProjectEntity> projects = new ArrayList<>();
 
-     @OneToMany(mappedBy = "departmentEntity", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     @JsonIgnore
-    private List<DepartmentEntity> departments;
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<CommentEntity> comments = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "department_id")
+    @JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private DepartmentEntity department;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role;
-
-    
+    private Role role = Role.USER;
 }
