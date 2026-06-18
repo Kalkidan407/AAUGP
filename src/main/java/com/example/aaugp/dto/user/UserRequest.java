@@ -11,11 +11,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserRequest {
 
-    @NotBlank(message = "First name is required")
-    private String firstName;
+    @NotBlank(message = " name is required")
+    private String name;
 
-    @NotBlank(message = "Last name is required")
-    private String lastName;
 
     @NotBlank(message = "Student id is required")
     private String studentId;
