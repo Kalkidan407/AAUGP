@@ -1,6 +1,7 @@
 package com.example.aaugp.services;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,6 +26,7 @@ public class UserServices {
     private final UserRepository userRepository;
     private final DepartmentRepository departmentRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AauStudentIdValidator aauStudentIdValidator;
 
     public UserResponse toDTO(UserEntity user) {
         UserResponse dto = new UserResponse();
@@ -42,10 +44,10 @@ public class UserServices {
 
     private UserEntity fromDTO(UserRequest request) {
         UserEntity user = new UserEntity();
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setStudentId(request.getStudentId());
-        user.setEmail(request.getEmail());
+        user.setFirstName(request.getFirstName().trim());
+        user.setLastName(request.getLastName().trim());
+        user.setStudentId(aauStudentIdValidator.normalizeStudentId(request.getStudentId()));
+        user.setEmail(normalizeEmail(request.getEmail()));
         user.setPassword(
             passwordEncoder.encode(request.getPassword())
           );
@@ -67,6 +69,8 @@ public class UserServices {
     }
 
     public UserResponse createUser(UserRequest dto) {
+        ensureEmailIsAvailable(normalizeEmail(dto.getEmail()), null);
+        ensureStudentIdIsAvailable(aauStudentIdValidator.normalizeStudentId(dto.getStudentId()), null);
         UserEntity user = fromDTO(dto);
         UserEntity saved = userRepository.save(user);
         return toDTO(saved);
@@ -84,7 +88,8 @@ public class UserServices {
     }
 
     public UserResponse getUserByStudentId(String studentId) {
-        UserEntity user = userRepository.findByStudentId(studentId)
+        String normalizedStudentId = aauStudentIdValidator.normalizeStudentId(studentId);
+        UserEntity user = userRepository.findByStudentId(normalizedStudentId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "User not found with student id: " + studentId));
         return toDTO(user);
@@ -92,10 +97,15 @@ public class UserServices {
 
     public UserResponse updateUser(Long id, UserRequest dto) {
         UserEntity user = getUserEntityById(id);
-        user.setFirstName(dto.getFirstName());
-        user.setLastName(dto.getLastName());
-        user.setStudentId(dto.getStudentId());
-        user.setEmail(dto.getEmail());
+        String normalizedEmail = normalizeEmail(dto.getEmail());
+        String normalizedStudentId = aauStudentIdValidator.normalizeStudentId(dto.getStudentId());
+        ensureEmailIsAvailable(normalizedEmail, user.getId());
+        ensureStudentIdIsAvailable(normalizedStudentId, user.getId());
+
+        user.setFirstName(dto.getFirstName().trim());
+        user.setLastName(dto.getLastName().trim());
+        user.setStudentId(normalizedStudentId);
+        user.setEmail(normalizedEmail);
         if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(dto.getPassword()));
         }
@@ -113,6 +123,29 @@ public class UserServices {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "User not found with id: " + id));
+    }
+
+    private String normalizeEmail(String email) {
+        if (email == null || email.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is required");
+        }
+        return email.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private void ensureEmailIsAvailable(String email, Long currentUserId) {
+        userRepository.findByEmailIgnoreCase(email)
+                .filter(existingUser -> currentUserId == null || !existingUser.getId().equals(currentUserId))
+                .ifPresent(existingUser -> {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists: " + email);
+                });
+    }
+
+    private void ensureStudentIdIsAvailable(String studentId, Long currentUserId) {
+        userRepository.findByStudentId(studentId)
+                .filter(existingUser -> currentUserId == null || !existingUser.getId().equals(currentUserId))
+                .ifPresent(existingUser -> {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "Student id already exists: " + studentId);
+                });
     }
 
     

@@ -12,4 +12,7 @@ import com.example.aaugp.model.UserEntity;
 public interface UserRepository  extends JpaRepository<UserEntity, Long>, JpaSpecificationExecutor<UserEntity> {
     Optional<UserEntity> findByStudentId(String studentId);
     Optional<UserEntity> findByEmail(String email);
+    Optional<UserEntity> findByEmailIgnoreCase(String email);
+    boolean existsByStudentId(String studentId);
+    boolean existsByEmailIgnoreCase(String email);
 }

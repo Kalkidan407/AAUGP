@@ -187,10 +187,7 @@ public class ProjectService {
     }
 
     private String normalizeStudentId(String studentId) {
-        if (studentId == null || studentId.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Student id is required");
-        }
-        return studentId.trim().toUpperCase();
+        return aauStudentIdValidator.normalizeStudentId(studentId);
     }
 
     private DepartmentEntity resolveDepartment(String departmentName) {
