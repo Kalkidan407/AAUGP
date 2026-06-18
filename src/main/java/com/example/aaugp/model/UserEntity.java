@@ -57,7 +57,7 @@ public class UserEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id")
-    @JsonIgnore
+ 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private DepartmentEntity department;
