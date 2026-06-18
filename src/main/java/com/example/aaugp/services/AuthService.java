@@ -100,7 +100,7 @@ public class AuthService {
                 lastName,
                 request.getStudentId(),
                 request.getEmail(),
-                request.getPassword(),
-                request.getDepartment());
+                request.getPassword()
+            );
     }
 }
