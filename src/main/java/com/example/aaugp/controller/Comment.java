@@ -22,12 +22,14 @@ import com.example.aaugp.dto.comment.CommentRequest;
 import com.example.aaugp.dto.comment.CommentResponse;
 import com.example.aaugp.services.CommentService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/comment")
+@Tag(name = "3. Comments", description = "Comment management")
 public class Comment {
 
     private final CommentService commentService;

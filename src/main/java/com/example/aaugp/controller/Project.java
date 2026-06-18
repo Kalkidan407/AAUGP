@@ -23,12 +23,14 @@ import com.example.aaugp.dto.projects.ProjectResponse;
 import com.example.aaugp.model.Status;
 import com.example.aaugp.services.ProjectService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/project")
+@Tag(name = "2. Projects")
 public class Project {
 
     private final ProjectService projectService;
