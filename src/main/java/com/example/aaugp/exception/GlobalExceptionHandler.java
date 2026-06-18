@@ -67,11 +67,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleDataIntegrity(
             DataIntegrityViolationException exception,
             HttpServletRequest request) {
-        return buildResponse(
-                HttpStatus.CONFLICT,
-                "The request conflicts with existing data. Check unique fields like email, student id, project title, links, and department name.",
-                request,
-                Map.of());
+        String details = rootMessage(exception);
+        Map<String, String> fieldErrors = uniqueConstraintErrors(details);
+        String message = fieldErrors.isEmpty()
+                ? "The request conflicts with existing data."
+                : "A unique field already exists.";
+        return buildResponse(HttpStatus.CONFLICT, message, request, fieldErrors);
     }
 
     @ExceptionHandler(AuthenticationException.class)
@@ -106,5 +107,40 @@ public class GlobalExceptionHandler {
                 request.getRequestURI(),
                 fieldErrors);
         return ResponseEntity.status(status).body(response);
+    }
+
+    private Map<String, String> uniqueConstraintErrors(String details) {
+        if (details == null || details.isBlank()) {
+            return Map.of();
+        }
+
+        String normalizedDetails = details.toLowerCase();
+        Map<String, String> fieldErrors = new LinkedHashMap<>();
+        if (normalizedDetails.contains("email")) {
+            fieldErrors.put("email", "Email already exists");
+        }
+        if (normalizedDetails.contains("student_id") || normalizedDetails.contains("studentid")) {
+            fieldErrors.put("studentId", "Student id already exists");
+        }
+        if (normalizedDetails.contains("department") || normalizedDetails.contains("name")) {
+            fieldErrors.put("department", "Department already exists");
+        }
+        if (normalizedDetails.contains("title")) {
+            fieldErrors.put("title", "Project title already exists");
+        }
+        if (normalizedDetails.contains("link")) {
+            fieldErrors.put("link", "Project link already exists");
+        }
+        return fieldErrors;
+    }
+
+    private String rootMessage(Throwable throwable) {
+        Throwable current = throwable;
+        Throwable root = throwable;
+        while (current != null) {
+            root = current;
+            current = current.getCause();
+        }
+        return root.getMessage();
     }
 }
