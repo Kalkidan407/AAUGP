@@ -24,7 +24,6 @@ public class RegisterRequest {
     private String email;
 
     @NotBlank(message = "Department is required")
-    @JsonAlias({"departments"})
     @Schema(example = "Computer Science")
     private String department;
 
