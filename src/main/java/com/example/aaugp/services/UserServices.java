@@ -32,8 +32,7 @@ public class UserServices {
     public UserResponse toDTO(UserEntity user) {
         UserResponse dto = new UserResponse();
         dto.setId(user.getId());
-        dto.setFirstName(user.getFirstName());
-        dto.setLastName(user.getLastName());
+        dto.setName(user.getName());
         dto.setEmail(user.getEmail());
         dto.setStudentId(user.getStudentId());
         dto.setRole(user.getRole());
@@ -45,8 +44,7 @@ public class UserServices {
 
     private UserEntity fromDTO(UserRequest request) {
         UserEntity user = new UserEntity();
-        user.setFirstName(request.getFirstName().trim());
-        user.setLastName(request.getLastName().trim());
+        user.setName(request.getName().trim());
         user.setStudentId(aauStudentIdValidator.normalizeStudentId(request.getStudentId()));
         user.setEmail(normalizeEmail(request.getEmail()));
         user.setPassword(
@@ -108,9 +106,8 @@ public class UserServices {
         String normalizedStudentId = aauStudentIdValidator.normalizeStudentId(dto.getStudentId());
         ensureEmailIsAvailable(normalizedEmail, user.getId());
         ensureStudentIdIsAvailable(normalizedStudentId, user.getId());
-
-        user.setFirstName(dto.getFirstName().trim());
-        user.setLastName(dto.getLastName().trim());
+        
+        user.setName(dto.getName().trim());
         user.setStudentId(normalizedStudentId);
         user.setEmail(normalizedEmail);
         if (dto.getPassword() != null && !dto.getPassword().isBlank()) {

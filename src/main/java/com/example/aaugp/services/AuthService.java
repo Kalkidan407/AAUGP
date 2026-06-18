@@ -92,12 +92,11 @@ public class AuthService {
     private UserRequest toUserRequest(RegisterRequest request) {
         String normalizedName = request.getName().trim().replaceAll("\\s+", " ");
         String[] nameParts = normalizedName.split(" ", 2);
-        String firstName = nameParts[0];
-        String lastName = nameParts.length > 1 ? nameParts[1] : "-";
+        String name = nameParts[0];
+   
 
         return new UserRequest(
-                firstName,
-                lastName,
+                name,
                 request.getStudentId(),
                 request.getEmail(),
                 request.getPassword(),
