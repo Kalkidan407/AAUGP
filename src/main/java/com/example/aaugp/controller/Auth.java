@@ -19,10 +19,9 @@ import lombok.RequiredArgsConstructor;
 
 
 @RestController
-
-@Tag(name = "1. Authentication")
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
+@Tag(name = "1. Authentication", description = "Login and registration")
 
 public class Auth {
 

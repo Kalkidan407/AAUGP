@@ -20,12 +20,14 @@ import com.example.aaugp.dto.department.DepartmentRequest;
 import com.example.aaugp.dto.department.DepartmentResponse;
 import com.example.aaugp.services.DepartmentService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/department")
+@Tag(name = "4. Departments", description = "Department management")
 public class Department {
 
     private final DepartmentService departmentService;
