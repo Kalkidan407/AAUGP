@@ -31,6 +31,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
+    private final AauStudentIdValidator aauStudentIdValidator;
     private final Map<CommentListCacheKey, Page<CommentResponse>> commentListCache = new ConcurrentHashMap<>();
 
     public CommentResponse createComment(CommentRequest request) {
@@ -60,7 +61,7 @@ public class CommentService {
     }
 
     public List<CommentResponse> getCommentsByStudentId(String studentId) {
-        return commentRepository.findByUserStudentId(studentId).stream()
+        return commentRepository.findByUserStudentId(aauStudentIdValidator.normalizeStudentId(studentId)).stream()
                 .map(this::toDTO)
                 .toList();
     }
@@ -109,10 +110,8 @@ public class CommentService {
     }
 
     private UserEntity resolveUser(String studentId) {
-        if (studentId == null || studentId.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Student id is required");
-        }
-        return userRepository.findByStudentId(studentId.trim().toUpperCase(Locale.ROOT))
+        String normalizedStudentId = aauStudentIdValidator.normalizeStudentId(studentId);
+        return userRepository.findByStudentId(normalizedStudentId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "User not found with student id: " + studentId));
     }
@@ -135,7 +134,7 @@ public class CommentService {
         }
 
         if (filter.studentId() != null && !filter.studentId().isBlank()) {
-            String studentId = filter.studentId().trim().toUpperCase(Locale.ROOT);
+            String studentId = aauStudentIdValidator.normalizeStudentId(filter.studentId());
             specification = specification.and((root, query, builder) ->
                     builder.equal(root.get("user").get("studentId"), studentId));
         }

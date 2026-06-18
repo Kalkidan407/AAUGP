@@ -37,4 +37,5 @@ public class Auth {
     public AuthResponse login(@Valid @RequestBody AuthRequest request) {
         return authService.login(request);
     }
+
 }

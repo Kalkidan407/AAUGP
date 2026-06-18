@@ -25,13 +25,14 @@ public class AuthService {
 
     public AuthResponse register(UserRequest request) {
         UserResponse user = userServices.createUser(request);
-        UserEntity savedUser = userRepository.findByEmail(user.getEmail())
+        UserEntity savedUser = userRepository.findByEmailIgnoreCase(user.getEmail())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "User registration failed"));
         return new AuthResponse(jwtService.generateToken(savedUser), "Bearer", user);
     }
 
     public AuthResponse login(AuthRequest request) {
-        UserEntity user = userRepository.findByEmail(request.getEmail())
+        String email = request.getEmail() == null ? "" : request.getEmail().trim();
+        UserEntity user = userRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password"));
 
         if (!isPasswordValid(request.getPassword(), user)) {

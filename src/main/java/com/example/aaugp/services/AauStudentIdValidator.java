@@ -12,7 +12,8 @@ import org.springframework.web.server.ResponseStatusException;
 @Component
 public class AauStudentIdValidator {
 
-    private static final Pattern STUDENT_ID_PATTERN = Pattern.compile("^(URG|NSE)/\\d{4}/(\\d{2})$");
+    private static final Pattern STUDENT_ID_PATTERN =
+            Pattern.compile("^(UGR|URG|NSE)\\s*[/\\-]\\s*(\\d{4})\\s*[/\\-]\\s*(\\d{2})$");
     private static final int ETHIOPIAN_YEAR_BASE = 2000;
     private static final int REGULAR_FINAL_PROJECT_YEAR_OFFSET = 3;
     private static final int EXTENSION_FINAL_PROJECT_YEAR_OFFSET = 4;
@@ -41,6 +42,19 @@ public class AauStudentIdValidator {
     }
 
     public StudentAcademicInfo parse(String studentId) {
+        String normalizedStudentId = normalizeStudentId(studentId);
+        Matcher matcher = STUDENT_ID_PATTERN.matcher(normalizedStudentId);
+
+        int startYearEc = ETHIOPIAN_YEAR_BASE + Integer.parseInt(matcher.group(3));
+        String programCode = matcher.group(1);
+        int finalProjectOffset = "NSE".equals(programCode)
+                ? EXTENSION_FINAL_PROJECT_YEAR_OFFSET
+                : REGULAR_FINAL_PROJECT_YEAR_OFFSET;
+        String programType = "NSE".equals(programCode) ? "extension" : "regular";
+        return new StudentAcademicInfo(programCode, programType, startYearEc, startYearEc + finalProjectOffset);
+    }
+
+    public String normalizeStudentId(String studentId) {
         if (studentId == null || studentId.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Student id is required");
         }
@@ -49,16 +63,10 @@ public class AauStudentIdValidator {
         if (!matcher.matches()) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Invalid AAU student id format. Use URG/3456/23 for regular students or NSE/3412/15 for extension students.");
+                    "Invalid AAU student id format. Use UGR/3456/23 for regular students or NSE/3412/15 for extension students.");
         }
 
-        int startYearEc = ETHIOPIAN_YEAR_BASE + Integer.parseInt(matcher.group(2));
-        String programCode = matcher.group(1);
-        int finalProjectOffset = "NSE".equals(programCode)
-                ? EXTENSION_FINAL_PROJECT_YEAR_OFFSET
-                : REGULAR_FINAL_PROJECT_YEAR_OFFSET;
-        String programType = "NSE".equals(programCode) ? "extension" : "regular";
-        return new StudentAcademicInfo(programCode, programType, startYearEc, startYearEc + finalProjectOffset);
+        return matcher.group(1) + "/" + matcher.group(2) + "/" + matcher.group(3);
     }
 
     private int currentEthiopianYear() {
