@@ -90,36 +90,6 @@ JWT_REFRESH_TOKEN_EXPIRATION_SECONDS=2592000
 
 `CORS_ALLOWED_ORIGIN_PATTERNS` defaults to `https://*.onrender.com`, which supports Render-hosted frontend previews. For a stable production frontend, prefer setting the exact frontend origin in `CORS_ALLOWED_ORIGINS`.
 
-## TanStack / Bun Client
-
-Point the frontend to the deployed API:
-
-```bash
-VITE_API_URL=https://your-api-name.onrender.com
-```
-
-Generate TypeScript types from the deployed OpenAPI document:
-
-```bash
-bunx openapi-typescript https://your-api-name.onrender.com/v3/api-docs -o src/lib/api/schema.ts
-```
-
-Install the typed fetch client:
-
-```bash
-bun add openapi-fetch
-```
-
-Example client:
-
-```ts
-import createClient from "openapi-fetch";
-import type { paths } from "./schema";
-
-export const api = createClient<paths>({
-  baseUrl: import.meta.env.VITE_API_URL,
-});
-```
 
 ## Health Check
 
