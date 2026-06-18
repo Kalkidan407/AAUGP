@@ -1,74 +1,116 @@
 # AAUGP API
 
-Spring Boot API for the Addis Ababa University Graduation Project Platform.
+Backend API for the Addis Ababa University Graduation Project Platform.
 
-## Local API
+## Stack
+
+- Java 21
+- Spring Boot
+- Spring Security with JWT access tokens
+- Rotating opaque refresh tokens
+- PostgreSQL
+- OpenAPI / Swagger UI
+
+## Running Locally
 
 ```bash
+export SPRING_DATASOURCE_URL="jdbc:postgresql://host:5432/database?sslmode=require"
+export SPRING_DATASOURCE_USERNAME="postgres-user"
+export SPRING_DATASOURCE_PASSWORD="postgres-password"
+export JWT_SECRET="replace-with-a-long-random-secret"
+
 ./mvnw spring-boot:run
 ```
 
 The API runs on `http://localhost:8080` by default.
 
-Useful integration URLs:
+## API Documentation
 
-- Health check: `GET http://localhost:8080/api/health`
-- OpenAPI JSON: `GET http://localhost:8080/v3/api-docs`
-- Swagger UI: `http://localhost:8080/swagger-ui.html`
+Swagger UI is available at:
 
-## Environment
-
-Required:
-
-```bash
-export SPRING_DATASOURCE_USERNAME="your-postgres-user"
-export SPRING_DATASOURCE_PASSWORD="your-postgres-password"
+```text
+/swagger-ui.html
 ```
 
-Optional:
+The OpenAPI document is available at:
 
-```bash
-export PORT=8080
-export SPRING_DATASOURCE_URL="jdbc:postgresql://host:5432/database?sslmode=require"
-export CORS_ALLOWED_ORIGINS="http://localhost:3000,http://localhost:5173,http://localhost:4173"
-export API_BASE_URL="http://localhost:8080"
+```text
+/v3/api-docs
 ```
+
+Swagger uses the current API host, so it works correctly on Render and locally without changing an API base URL setting.
+
+## Authentication
+
+Register and login return a short-lived JWT access token and a long-lived refresh token:
+
+```json
+{
+  "accessToken": "jwt-access-token",
+  "refreshToken": "opaque-refresh-token",
+  "tokenType": "Bearer",
+  "expiresIn": 900
+}
+```
+
+Use the access token for protected requests:
+
+```http
+Authorization: Bearer <accessToken>
+```
+
+Refresh tokens are opaque random tokens. The API stores only their SHA-256 hash, rotates them on every refresh, and revokes them on logout.
+
+Auth endpoints:
+
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `POST /api/auth/refresh`
+- `POST /api/auth/logout`
 
 ## Render Deployment
 
-Set these Render environment variables for the API service:
+Set these environment variables on the Render API service:
 
 ```bash
 SPRING_DATASOURCE_URL=jdbc:postgresql://host:5432/database?sslmode=require
-SPRING_DATASOURCE_USERNAME=your-postgres-user
-SPRING_DATASOURCE_PASSWORD=your-postgres-password
-API_BASE_URL=https://your-api-name.onrender.com
-CORS_ALLOWED_ORIGINS=https://your-tanstack-app-domain.com,http://localhost:3000,http://localhost:5173
+SPRING_DATASOURCE_USERNAME=postgres-user
+SPRING_DATASOURCE_PASSWORD=postgres-password
+JWT_SECRET=replace-with-a-long-random-secret
 ```
 
-Use your real Render API URL for `API_BASE_URL`. Use your real TanStack frontend URL for `CORS_ALLOWED_ORIGINS`; otherwise browser requests will be blocked by CORS.
-
-## TanStack + Bun Integration
-
-In your TanStack app, set the API base URL:
+Optional production settings:
 
 ```bash
-echo 'VITE_API_URL=https://your-api-name.onrender.com' > .env.local
+CORS_ALLOWED_ORIGINS=https://your-frontend-domain.com
+CORS_ALLOWED_ORIGIN_PATTERNS=https://*.onrender.com
+JWT_ACCESS_TOKEN_EXPIRATION_SECONDS=900
+JWT_REFRESH_TOKEN_EXPIRATION_SECONDS=2592000
 ```
 
-Generate a TypeScript client from the API contract:
+`CORS_ALLOWED_ORIGIN_PATTERNS` defaults to `https://*.onrender.com`, which supports Render-hosted frontend previews. For a stable production frontend, prefer setting the exact frontend origin in `CORS_ALLOWED_ORIGINS`.
+
+## TanStack / Bun Client
+
+Point the frontend to the deployed API:
+
+```bash
+VITE_API_URL=https://your-api-name.onrender.com
+```
+
+Generate TypeScript types from the deployed OpenAPI document:
 
 ```bash
 bunx openapi-typescript https://your-api-name.onrender.com/v3/api-docs -o src/lib/api/schema.ts
 ```
 
-Install a small fetch client:
+Install the typed fetch client:
 
 ```bash
 bun add openapi-fetch
 ```
 
-Example TanStack-side client:
+Example client:
 
 ```ts
 import createClient from "openapi-fetch";
@@ -79,20 +121,8 @@ export const api = createClient<paths>({
 });
 ```
 
-After login or registration, send the returned JWT as a bearer token:
+## Health Check
 
-```ts
-await api.GET("/api/project", {
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
-});
+```text
+GET /api/health
 ```
-
-Public endpoints:
-
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `GET /api/health`
-
-All other endpoints require `Authorization: Bearer <token>`.

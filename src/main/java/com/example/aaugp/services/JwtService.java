@@ -20,16 +20,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class JwtService {
 
     private static final String HMAC_ALGORITHM = "HmacSHA256";
-    private static final long EXPIRATION_SECONDS = 24 * 60 * 60;
 
     private final ObjectMapper objectMapper;
     private final byte[] secret;
+    private final long expirationSeconds;
 
     public JwtService(
             ObjectMapper objectMapper,
-            @Value("${app.jwt.secret:change-this-secret-before-production}") String secret) {
+            @Value("${app.jwt.secret:change-this-secret-before-production}") String secret,
+            @Value("${app.jwt.access-token-expiration-seconds:900}") long expirationSeconds) {
         this.objectMapper = objectMapper;
         this.secret = secret.getBytes(StandardCharsets.UTF_8);
+        this.expirationSeconds = expirationSeconds;
     }
 
     public String generateToken(UserEntity user) {
@@ -44,10 +46,14 @@ public class JwtService {
         payload.put("studentId", user.getStudentId());
         payload.put("role", user.getRole().name());
         payload.put("iat", now.getEpochSecond());
-        payload.put("exp", now.plusSeconds(EXPIRATION_SECONDS).getEpochSecond());
+        payload.put("exp", now.plusSeconds(expirationSeconds).getEpochSecond());
 
         String unsignedToken = encodeJson(header) + "." + encodeJson(payload);
         return unsignedToken + "." + sign(unsignedToken);
+    }
+
+    public long getExpirationSeconds() {
+        return expirationSeconds;
     }
 
     public boolean isTokenValid(String token) {

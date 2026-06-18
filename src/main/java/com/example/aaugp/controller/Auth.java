@@ -9,9 +9,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.aaugp.dto.auth.AuthRequest;
 import com.example.aaugp.dto.auth.AuthResponse;
+import com.example.aaugp.dto.auth.RefreshTokenRequest;
 import com.example.aaugp.dto.user.UserRequest;
 import com.example.aaugp.services.AuthService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -38,4 +40,20 @@ public class Auth {
         return authService.login(request);
     }
 
+    @PostMapping("/refresh")
+    @Operation(
+            summary = "Refresh access token",
+            description = "Rotates a valid refresh token and returns a new access token plus a new refresh token.")
+    public AuthResponse refresh(@Valid @RequestBody RefreshTokenRequest request) {
+        return authService.refresh(request);
+    }
+
+    @PostMapping("/logout")
+    @Operation(
+            summary = "Logout",
+            description = "Revokes the current refresh token.")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void logout(@Valid @RequestBody RefreshTokenRequest request) {
+        authService.logout(request);
+    }
 }
