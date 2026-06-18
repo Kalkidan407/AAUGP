@@ -6,6 +6,7 @@ import java.util.Locale;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.web.server.ResponseStatusException;
 
 
@@ -60,11 +61,17 @@ public class UserServices {
         if (departmentName == null || departmentName.isBlank()) {
             return null;
         }
-        return departmentRepository.findByNameIgnoreCase(departmentName.trim())
+        String normalizedDepartmentName = departmentName.trim();
+        return departmentRepository.findByNameIgnoreCase(normalizedDepartmentName)
                 .orElseGet(() -> {
-                    DepartmentEntity department = new DepartmentEntity();
-                    department.setName(departmentName.trim());
-                    return departmentRepository.save(department);
+                    try {
+                        DepartmentEntity department = new DepartmentEntity();
+                        department.setName(normalizedDepartmentName);
+                        return departmentRepository.saveAndFlush(department);
+                    } catch (DataIntegrityViolationException exception) {
+                        return departmentRepository.findByNameIgnoreCase(normalizedDepartmentName)
+                                .orElseThrow(() -> exception);
+                    }
                 });
     }
 

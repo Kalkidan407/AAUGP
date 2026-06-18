@@ -9,6 +9,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.example.aaugp.dto.auth.AuthRequest;
 import com.example.aaugp.dto.auth.AuthResponse;
 import com.example.aaugp.dto.auth.RefreshTokenRequest;
+import com.example.aaugp.dto.auth.RegisterRequest;
 import com.example.aaugp.dto.user.UserRequest;
 import com.example.aaugp.dto.user.UserResponse;
 import com.example.aaugp.model.UserEntity;
@@ -29,8 +30,8 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public AuthResponse register(UserRequest request) {
-        UserResponse user = userServices.createUser(request);
+    public AuthResponse register(RegisterRequest request) {
+        UserResponse user = userServices.createUser(toUserRequest(request));
         UserEntity savedUser = userRepository.findByEmailIgnoreCase(user.getEmail())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "User registration failed"));
         return createAuthResponse(savedUser);
@@ -86,5 +87,20 @@ public class AuthService {
                 "Bearer",
                 jwtService.getExpirationSeconds(),
                 userServices.toDTO(user));
+    }
+
+    private UserRequest toUserRequest(RegisterRequest request) {
+        String normalizedName = request.getName().trim().replaceAll("\\s+", " ");
+        String[] nameParts = normalizedName.split(" ", 2);
+        String firstName = nameParts[0];
+        String lastName = nameParts.length > 1 ? nameParts[1] : "-";
+
+        return new UserRequest(
+                firstName,
+                lastName,
+                request.getStudentId(),
+                request.getEmail(),
+                request.getPassword(),
+                request.getDepartment());
     }
 }

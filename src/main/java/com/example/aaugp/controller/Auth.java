@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.aaugp.dto.auth.AuthRequest;
 import com.example.aaugp.dto.auth.AuthResponse;
 import com.example.aaugp.dto.auth.RefreshTokenRequest;
-import com.example.aaugp.dto.user.UserRequest;
+import com.example.aaugp.dto.auth.RegisterRequest;
 import com.example.aaugp.services.AuthService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,7 +31,10 @@ public class Auth {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public AuthResponse register(@Valid @RequestBody UserRequest request) {
+    @Operation(
+            summary = "Register",
+            description = "Creates a user account and returns an access token plus a refresh token.")
+    public AuthResponse register(@Valid @RequestBody RegisterRequest request) {
         return authService.register(request);
     }
 
