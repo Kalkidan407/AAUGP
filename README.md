@@ -31,7 +31,11 @@ Optional:
 export PORT=8080
 export SPRING_DATASOURCE_URL="jdbc:postgresql://host:5432/database?sslmode=require"
 export CORS_ALLOWED_ORIGINS="http://localhost:3000,http://localhost:5173,http://localhost:4173"
+export CORS_ALLOWED_ORIGIN_PATTERNS=""
 export API_BASE_URL="http://localhost:8080"
+export JWT_SECRET="replace-with-a-long-random-secret"
+export JWT_ACCESS_TOKEN_EXPIRATION_SECONDS=900
+export JWT_REFRESH_TOKEN_EXPIRATION_SECONDS=2592000
 ```
 
 ## Render Deployment
@@ -44,9 +48,25 @@ SPRING_DATASOURCE_USERNAME=your-postgres-user
 SPRING_DATASOURCE_PASSWORD=your-postgres-password
 API_BASE_URL=https://your-api-name.onrender.com
 CORS_ALLOWED_ORIGINS=https://your-tanstack-app-domain.com,http://localhost:3000,http://localhost:5173
+CORS_ALLOWED_ORIGIN_PATTERNS=https://*.onrender.com
+JWT_SECRET=replace-with-a-long-random-secret
+JWT_ACCESS_TOKEN_EXPIRATION_SECONDS=900
+JWT_REFRESH_TOKEN_EXPIRATION_SECONDS=2592000
 ```
 
 Use your real Render API URL for `API_BASE_URL`. Use your real TanStack frontend URL for `CORS_ALLOWED_ORIGINS`; otherwise browser requests will be blocked by CORS.
+
+If your frontend Render URL changes between previews, use `CORS_ALLOWED_ORIGIN_PATTERNS=https://*.onrender.com`. Keep exact production origins in `CORS_ALLOWED_ORIGINS` when possible.
+
+Quick deployed API checks:
+
+```bash
+curl https://your-api-name.onrender.com/api/health
+curl -i -X OPTIONS https://your-api-name.onrender.com/api/auth/register \
+  -H "Origin: https://your-tanstack-app-domain.com" \
+  -H "Access-Control-Request-Method: POST" \
+  -H "Access-Control-Request-Headers: content-type"
+```
 
 ## TanStack + Bun Integration
 
@@ -89,10 +109,43 @@ await api.GET("/api/project", {
 });
 ```
 
+Login and registration return both tokens:
+
+```json
+{
+  "accessToken": "jwt-access-token",
+  "refreshToken": "opaque-refresh-token",
+  "tokenType": "Bearer",
+  "expiresIn": 900
+}
+```
+
+Use `accessToken` for API requests. When it expires, rotate the refresh token:
+
+```ts
+const result = await api.POST("/api/auth/refresh", {
+  body: {
+    refreshToken,
+  },
+});
+```
+
+Persist the new `accessToken` and new `refreshToken` from that response. To sign out, revoke the current refresh token:
+
+```ts
+await api.POST("/api/auth/logout", {
+  body: {
+    refreshToken,
+  },
+});
+```
+
 Public endpoints:
 
 - `POST /api/auth/register`
 - `POST /api/auth/login`
+- `POST /api/auth/refresh`
+- `POST /api/auth/logout`
 - `GET /api/health`
 
 All other endpoints require `Authorization: Bearer <token>`.
