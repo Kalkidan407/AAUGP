@@ -53,27 +53,27 @@ public class UserServices {
             passwordEncoder.encode(request.getPassword())
           );
         user.setRole(Role.USER);
-        user.setDepartment(resolveDepartment(request.getDepartments()));
+      
         return user;
     }
 
-    private DepartmentEntity resolveDepartment(String departmentName) {
-        if (departmentName == null || departmentName.isBlank()) {
-            return null;
-        }
-        String normalizedDepartmentName = departmentName.trim();
-        return departmentRepository.findByNameIgnoreCase(normalizedDepartmentName)
-                .orElseGet(() -> {
-                    try {
-                        DepartmentEntity department = new DepartmentEntity();
-                        department.setName(normalizedDepartmentName);
-                        return departmentRepository.saveAndFlush(department);
-                    } catch (DataIntegrityViolationException exception) {
-                        return departmentRepository.findByNameIgnoreCase(normalizedDepartmentName)
-                                .orElseThrow(() -> exception);
-                    }
-                });
-    }
+    // private DepartmentEntity resolveDepartment(String departmentName) {
+    //     if (departmentName == null || departmentName.isBlank()) {
+    //         return null;
+    //     }
+    //     String normalizedDepartmentName = departmentName.trim();
+    //     return departmentRepository.findByNameIgnoreCase(normalizedDepartmentName)
+    //             .orElseGet(() -> {
+    //                 try {
+    //                     DepartmentEntity department = new DepartmentEntity();
+    //                     department.setName(normalizedDepartmentName);
+    //                     return departmentRepository.saveAndFlush(department);
+    //                 } catch (DataIntegrityViolationException exception) {
+    //                     return departmentRepository.findByNameIgnoreCase(normalizedDepartmentName)
+    //                             .orElseThrow(() -> exception);
+    //                 }
+    //             });
+    // }
 
     public UserResponse createUser(UserRequest dto) {
         ensureEmailIsAvailable(normalizeEmail(dto.getEmail()), null);
@@ -116,7 +116,7 @@ public class UserServices {
         if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(dto.getPassword()));
         }
-        user.setDepartment(resolveDepartment(dto.getDepartments()));
+   
         UserEntity updated = userRepository.save(user);
         return toDTO(updated);
     }
