@@ -12,12 +12,17 @@ import com.example.aaugp.dto.auth.AuthResponse;
 import com.example.aaugp.dto.user.UserRequest;
 import com.example.aaugp.services.AuthService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+
+
 @RestController
+@Tag(name = "Authentication")
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
+
 public class Auth {
 
     private final AuthService authService;
