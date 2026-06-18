@@ -62,6 +62,7 @@ public class UserEntity {
     @JsonIgnore
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
+     @Column(nullable = false, unique = false)
     private DepartmentEntity department;
 
     @Enumerated(EnumType.STRING)
