@@ -27,6 +27,16 @@ public class DepartmentService {
     private final DepartmentRepository departmentRepository;
     private final Map<DepartmentListCacheKey, Page<DepartmentResponse>> departmentListCache = new ConcurrentHashMap<>();
 
+
+    private DepartmentResponse toDTO(DepartmentEntity department) {
+        DepartmentResponse response = new DepartmentResponse();
+        response.setId(department.getId());
+        response.setDepartmentName(department.getName());
+        return response;
+    }
+
+
+
     public DepartmentResponse createDepartment(DepartmentRequest request) {
         DepartmentEntity department = new DepartmentEntity();
         department.setName(request.getDepartmentName());
@@ -59,12 +69,6 @@ public class DepartmentService {
         clearDepartmentListCache();
     }
 
-    private DepartmentResponse toDTO(DepartmentEntity department) {
-        DepartmentResponse response = new DepartmentResponse();
-        response.setId(department.getId());
-        response.setDepartmentName(department.getName());
-        return response;
-    }
 
     private DepartmentEntity getDepartmentEntityById(Long id) {
         return departmentRepository.findById(id)
