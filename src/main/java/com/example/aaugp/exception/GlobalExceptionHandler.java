@@ -132,6 +132,7 @@ public class GlobalExceptionHandler {
             fieldErrors.put("link", "Project link already exists");
         }
         return fieldErrors;
+    
     }
 
     private String rootMessage(Throwable throwable) {

@@ -25,7 +25,6 @@ public class UserRequest {
     @NotBlank(message = "Password is required")
     private String password;
 
-    @NotBlank(message = "Department is required")
-    private String departments;
+    private Long departmentId;
 
 }

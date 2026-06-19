@@ -38,6 +38,7 @@ public class UserServices {
         dto.setRole(user.getRole());
         if (user.getDepartment() != null) {
             dto.setDepartments(user.getDepartment().getName());
+            dto.setDepartmentId(user.getDepartment().getId());
         }
         return dto;
     }
@@ -51,26 +52,17 @@ public class UserServices {
             passwordEncoder.encode(request.getPassword())
           );
         user.setRole(Role.USER);
-        user.setDepartment(resolveDepartment(request.getDepartments()));
+        user.setDepartment(resolveDepartmentById(request.getDepartmentId()));
         return user;
     }
 
-    private DepartmentEntity resolveDepartment(String departmentName) {
-        if (departmentName == null || departmentName.isBlank()) {
+    private DepartmentEntity resolveDepartmentById(Long departmentId) {
+        if (departmentId == null) {
             return null;
         }
-        String normalizedDepartmentName = departmentName.trim();
-        return departmentRepository.findByNameIgnoreCase(normalizedDepartmentName)
-                .orElseGet(() -> {
-                    try {
-                        DepartmentEntity department = new DepartmentEntity();
-                        department.setName(normalizedDepartmentName);
-                        return departmentRepository.saveAndFlush(department);
-                    } catch (DataIntegrityViolationException exception) {
-                        return departmentRepository.findByNameIgnoreCase(normalizedDepartmentName)
-                                .orElseThrow(() -> exception);
-                    }
-                });
+        return departmentRepository.findById(departmentId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "Department not found with id: " + departmentId));
     }
 
     public UserResponse createUser(UserRequest dto) {
@@ -113,7 +105,7 @@ public class UserServices {
         if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(dto.getPassword()));
         }
-        user.setDepartment(resolveDepartment(dto.getDepartments()));
+        user.setDepartment(resolveDepartmentById(dto.getDepartmentId()));
         UserEntity updated = userRepository.save(user);
         return toDTO(updated);
     }

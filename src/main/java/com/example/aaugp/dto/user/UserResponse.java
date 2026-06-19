@@ -15,6 +15,7 @@ public class UserResponse {
     private String email;
     private String studentId;
     private String departments;
+    private Long departmentId;
     private Role role;
 
     
