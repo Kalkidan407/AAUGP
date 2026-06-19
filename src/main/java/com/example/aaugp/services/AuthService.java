@@ -21,6 +21,10 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+
+
+
+
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -100,6 +104,6 @@ public class AuthService {
                 request.getStudentId(),
                 request.getEmail(),
                 request.getPassword(),
-                request.getDepartment());
+                request.getDepartmentId());
     }
 }

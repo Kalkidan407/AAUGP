@@ -23,9 +23,8 @@ public class RegisterRequest {
     @Schema(example = "abebe@example.com")
     private String email;
 
-    @NotBlank(message = "Department is required")
-    @Schema(example = "Computer Science")
-    private String department;
+    @Schema(example = "1", description = "Department ID - select from available departments")
+    private Long departmentId;
 
     @NotBlank(message = "Student id is required")
     @JsonAlias({"studentid", "student_id"})
